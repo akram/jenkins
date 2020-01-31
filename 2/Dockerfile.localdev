@@ -90,6 +90,7 @@ RUN /usr/local/bin/install-jenkins-core-plugins.sh /opt/openshift/base-plugins.t
     /usr/local/bin/fix-permissions /var/lib/jenkins && \
     /usr/local/bin/fix-permissions /var/log
 
+WORKDIR /var/lib/jenkins
 VOLUME ["/var/lib/jenkins"]
 
 USER 1001
