@@ -24,8 +24,18 @@ Be sure that you are logged-in with an OpenShift cluster or that KUBECONFIG envi
 ### Building on an OpenShift cluster
 
 ```
-oc new-build https://github.com/origin/jenkins.git#your-branch-name --context-dir=2/
+oc new-build https://github.com/openshift/jenkins.git#your-branch-name --context-dir=2/
 ```
+### Building jenkins agent images on an OpenShift cluster
+
+```
+oc new-build https://github.com/openshift/jenkins.git#your-branch-name --context-dir=slave-base/
+oc new-build https://github.com/openshift/jenkins.git#your-branch-name --context-dir=agent-maven-3.5/
+oc new-build https://github.com/openshift/jenkins.git#your-branch-name --context-dir=agent-nodejs-8/
+oc new-build https://github.com/openshift/jenkins.git#your-branch-name --context-dir=agent-nodejs-10/
+
+```
+
 
 ### Deploying on an OpenShift Cluster
 ```
