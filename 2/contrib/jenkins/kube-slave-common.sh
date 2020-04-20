@@ -28,8 +28,9 @@ export JNLP_PORT=${JNLP_PORT:-50000}
 # provide a default when running this image outside of openshift;
 # other configuration changes (like the SA) were needed as well
 # anyway
-export NODEJS_SLAVE=${NODEJS_SLAVE_IMAGE:-image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-nodejs:latest}
+export BASE_SLAVE=${BASE_SLAVE_IMAGE:-image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-base:latest}
 export MAVEN_SLAVE=${MAVEN_SLAVE_IMAGE:-image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-maven:latest}
+export NODEJS_SLAVE=${NODEJS_SLAVE_IMAGE:-image-registry.openshift-image-registry.svc:5000/openshift/nodejs:latest}
 
 JENKINS_SERVICE_NAME=${JENKINS_SERVICE_NAME:-JENKINS}
 JENKINS_SERVICE_NAME=`echo ${JENKINS_SERVICE_NAME} | tr '[a-z]' '[A-Z]' | tr '-' '_'`
@@ -79,9 +80,68 @@ function generate_kubernetes_config() {
     echo "
     <org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud>
       <name>openshift</name>
+      <defaultsProviderTemplate>default</defaultsProviderTemplate>
       <templates>
-        <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+         <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
           <inheritFrom></inheritFrom>
+          <name>default</name>
+          <namespace></namespace>
+          <privileged>false</privileged>
+          <capOnlyOnAlivePods>false</capOnlyOnAlivePods>
+          <alwaysPullImage>false</alwaysPullImage>
+          <instanceCap>2147483647</instanceCap>
+          <slaveConnectTimeout>100</slaveConnectTimeout>
+          <idleMinutes>0</idleMinutes>
+          <activeDeadlineSeconds>0</activeDeadlineSeconds>
+          <label>jenkins-agent</label>
+          <serviceAccount>jenkins</serviceAccount>
+          <nodeSelector></nodeSelector>
+          <nodeUsageMode>NORMAL</nodeUsageMode>
+          <customWorkspaceVolumeEnabled>false</customWorkspaceVolumeEnabled>
+          <workspaceVolume class=\"org.csanchez.jenkins.plugins.kubernetes.volumes.workspace.EmptyDirWorkspaceVolume\">
+            <memory>false</memory>
+          </workspaceVolume>
+          <volumes/>
+          <containers>
+            <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+              <name>jnlp</name>
+              <image>${BASE_SLAVE}</image>
+              <privileged>false</privileged>
+              <alwaysPullImage>false</alwaysPullImage>
+              <workingDir>/home/jenkins/agent</workingDir>
+              <command></command>
+              <args>\${computer.jnlpmac} \${computer.name}</args>
+              <ttyEnabled>false</ttyEnabled>
+              <resourceRequestCpu></resourceRequestCpu>
+              <resourceRequestMemory></resourceRequestMemory>
+              <resourceLimitCpu></resourceLimitCpu>
+              <resourceLimitMemory></resourceLimitMemory>
+              <envVars/>
+              <ports/>
+              <livenessProbe>
+                <execArgs></execArgs>
+                <timeoutSeconds>0</timeoutSeconds>
+                <initialDelaySeconds>0</initialDelaySeconds>
+                <failureThreshold>0</failureThreshold>
+                <periodSeconds>0</periodSeconds>
+                <successThreshold>0</successThreshold>
+              </livenessProbe>
+            </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+          </containers>
+          <envVars/>
+          <annotations/>
+          <imagePullSecrets>
+            <org.csanchez.jenkins.plugins.kubernetes.PodImagePullSecret>
+              <name>jenkins-pull-secret</name>
+            </org.csanchez.jenkins.plugins.kubernetes.PodImagePullSecret>
+          </imagePullSecrets>
+          <nodeProperties/>
+          <yamlMergeStrategy class=\"org.csanchez.jenkins.plugins.kubernetes.pod.yaml.Overrides\"/>
+          <showRawYaml>true</showRawYaml>
+          <podRetention class=\"org.csanchez.jenkins.plugins.kubernetes.pod.retention.Default\"/>
+        </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+        <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+          <inheritFrom>default</inheritFrom>
           <name>maven</name>
           <instanceCap>2147483647</instanceCap>
           <idleMinutes>0</idleMinutes>
@@ -91,14 +151,14 @@ function generate_kubernetes_config() {
           <volumes/>
           <containers>
             <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
-              <name>jnlp</name>
+              <name>maven</name>
               <image>${MAVEN_SLAVE}</image>
               <privileged>false</privileged>
               <alwaysPullImage>true</alwaysPullImage>
               <workingDir>/tmp</workingDir>
-              <command></command>
-              <args>\${computer.jnlpmac} \${computer.name}</args>
-              <ttyEnabled>false</ttyEnabled>
+              <command>cat</command>
+              <args></args>
+              <ttyEnabled>true</ttyEnabled>
               <resourceRequestCpu></resourceRequestCpu>
               <resourceRequestMemory></resourceRequestMemory>
               <resourceLimitCpu></resourceLimitCpu>
@@ -112,7 +172,7 @@ function generate_kubernetes_config() {
           <nodeProperties/>
         </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
         <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
-          <inheritFrom></inheritFrom>
+          <inheritFrom>default</inheritFrom>
           <name>nodejs</name>
           <instanceCap>2147483647</instanceCap>
           <idleMinutes>0</idleMinutes>
@@ -122,14 +182,14 @@ function generate_kubernetes_config() {
           <volumes/>
           <containers>
             <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
-              <name>jnlp</name>
+              <name>nodejs</name>
               <image>${NODEJS_SLAVE}</image>
               <privileged>false</privileged>
               <alwaysPullImage>true</alwaysPullImage>
               <workingDir>/tmp</workingDir>
-              <command></command>
-              <args>\${computer.jnlpmac} \${computer.name}</args>
-              <ttyEnabled>false</ttyEnabled>
+              <command>cat</command>
+              <args></args>
+              <ttyEnabled>true</ttyEnabled>
               <resourceRequestCpu></resourceRequestCpu>
               <resourceRequestMemory></resourceRequestMemory>
               <resourceLimitCpu></resourceLimitCpu>
