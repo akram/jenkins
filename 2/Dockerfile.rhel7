@@ -33,6 +33,9 @@ ENV JENKINS_VERSION=2 \
     OPENSHIFT_JENKINS_IMAGE_VERSION=4.0 \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
+    BASH_ENV=/usr/local/bin/scl_enable \
+    ENV=/usr/local/bin/scl_enable \
+    PROMPT_COMMAND=". /usr/local/bin/scl_enable" \
     INSTALL_JENKINS_VIA_RPMS=false
 # openshift/ocp-build-data will change INSTALL_JENKINS_VIA_RPMS to true
 # so that the osbs/brew builds will install via RPMs; when this runs 
@@ -60,7 +63,7 @@ EXPOSE 8080 50000
 # /usr/lib64/jenkins will subsequently get redirected to /usr/lib/jenkins; it is confirmed that the 3.7 jenkins RHEL images 
 # do *NOT* have a /usr/lib64/jenkins path
 RUN ln -s /usr/lib/jenkins /usr/lib64/jenkins && \
-    INSTALL_PKGS="dejavu-sans-fonts wget rsync gettext git tar zip unzip openssl bzip2 java-11-openjdk java-11-openjdk-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel jq" && \
+    INSTALL_PKGS="dejavu-sans-fonts wget rsync gettext rh-git218-git tar zip unzip openssl bzip2 java-11-openjdk java-11-openjdk-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel jq" && \
     yum install -y $INSTALL_PKGS && \
     rpm -V  $INSTALL_PKGS && \
     yum clean all  && \
