@@ -33,6 +33,9 @@ ENV JENKINS_VERSION=2 \
     OPENSHIFT_JENKINS_IMAGE_VERSION=4.0 \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8 \
+    BASH_ENV=/usr/local/bin/scl_enable \
+    ENV=/usr/local/bin/scl_enable \
+    PROMPT_COMMAND=". /usr/local/bin/scl_enable" \
     INSTALL_JENKINS_VIA_RPMS=false
 
 LABEL k8s.io.description="Jenkins is a continuous integration server" \
@@ -47,8 +50,9 @@ EXPOSE 8080 50000
 
 RUN curl https://raw.githubusercontent.com/cloudrouter/centos-repo/master/CentOS-Base.repo -o /etc/yum.repos.d/CentOS-Base.repo && \
     curl http://mirror.centos.org/centos-7/7/os/x86_64/RPM-GPG-KEY-CentOS-7 -o /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \
-    INSTALL_PKGS="dejavu-sans-fonts rsync gettext git tar zip unzip openssl bzip2 java-11-openjdk java-11-openjdk-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel jq" && \
+    INSTALL_PKGS="dejavu-sans-fonts rsync gettext rh-git218 tar zip unzip openssl bzip2 java-11-openjdk java-11-openjdk-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel jq" && \
     DISABLES="--disablerepo=rhel-server-extras --disablerepo=rhel-server --disablerepo=rhel-fast-datapath --disablerepo=rhel-fast-datapath-beta --disablerepo=rhel-server-optional --disablerepo=rhel-server-ose --disablerepo=rhel-server-rhscl" && \
+    yum $DISABLES -y --setopt=tsflags=nodocs --disableplugin=subscription-manager install centos-release-scl-rh && \
     yum $DISABLES -y --setopt=tsflags=nodocs --disableplugin=subscription-manager install epel-release && \
     yum $DISABLES -y --setopt=tsflags=nodocs --disableplugin=subscription-manager install $INSTALL_PKGS && \
     rpm -V  $INSTALL_PKGS && \
