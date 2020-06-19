@@ -1,4 +1,4 @@
-FROM quay.io/openshift/origin-cli
+FROM quay.io/openshift/origin-cli:4.2
 
 # Jenkins image for OpenShift
 #
